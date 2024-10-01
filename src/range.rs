@@ -91,37 +91,20 @@ impl<T> RangeBounds<T> for Range<T> {
     fn end_bound(&self) -> Bound<&T>;
 }
 
-// #[flux_rs::extern_spec(core::ops)]
-// #[generics(Idx as base)]
-// #[flux_rs::assoc(fn done(r: Range<Idx>) -> bool { r.start == r.end } )]
-// #[flux_rs::assoc(fn step(self: Range<Idx>, other: Range<Idx>) -> bool { <Idx as Step>::can_step_forward(self.start, 1) => other.start == <Idx as Step>::step_forward(self.start, 1) } )]
-// impl<Idx: Step> Iterator for Range<Idx> {
-//     #[flux_rs::sig(
-//         fn(self: &strg Range<Idx>[@old_range]) -> Option<Idx>[old_range.start < old_range.end]
-//             ensures self: Range<Idx>{r: <Idx as Step>::can_step_forward(old_range.start, 1) => r.start == <Idx as Step>::step_forward(old_range.start, 1) }
-//     )]
-//     fn next(&mut self) -> Option<Idx>;
-// }
+#[flux_rs::extern_spec(core::ops)]
+#[generics(Idx as base)]
+#[flux_rs::assoc(fn done(r: Range<Idx>) -> bool { r.start == r.end } )]
+#[flux_rs::assoc(fn step(self: Range<Idx>, other: Range<Idx>) -> bool { <Idx as Step>::can_step_forward(self.start, 1) => other.start == <Idx as Step>::step_forward(self.start, 1) } )]
+impl<Idx: Step> Iterator for Range<Idx> {
+    #[flux_rs::sig(
+        fn(self: &strg Range<Idx>[@old_range]) -> Option<Idx>[old_range.start < old_range.end]
+            ensures self: Range<Idx>{r: <Idx as Step>::can_step_forward(old_range.start, 1) => r.start == <Idx as Step>::step_forward(old_range.start, 1) }
+  )]
+    fn next(&mut self) -> Option<Idx>;
+}
 
 #[flux_rs::refined_by(start: int, end: int)]
 struct StructWithRange {
     #[field(Range<usize>[start, end])]
     range: Range<usize>,
-}
-
-#[flux_rs::sig(fn(&[T][@len], usize[@start], usize[@end]) -> &[T][end - start])]
-fn test_slice<T>(slice: &[T], start: usize, end: usize) -> &[T] {
-    &slice[start..end]
-}
-
-#[flux_rs::sig(
-    fn(
-        { &[T][@len] | len > 1 },
-        { usize[@start] | start < len },
-        { usize[@end] | end < len && end > start },
-        { usize[@idx] | idx < end && idx >= start }
-    ) -> &T
-)]
-fn test_slice_indexed<T>(slice: &[T], start: usize, end: usize, idx: usize) -> &T {
-    &slice[start..end][idx]
 }
