@@ -72,7 +72,7 @@ trait IntoIterator {
 #[flux_rs::assoc(fn can_step_backward(start: int, count: int) -> bool { start - count >= usize::MIN } )]
 #[flux_rs::assoc(fn step_backward(start: int, count: int) -> int { start - count } )]
 impl Step for usize {
-    #[sig(fn(&usize[@start], &usize[@end]) -> Option<usize>[start < end])]
+    #[sig(fn(&usize[@start], &usize[@end]) -> Option<usize[end - start]>[start < end])]
     fn steps_between(start: &usize, end: &usize) -> Option<usize>;
 
     #[sig(fn(usize[@start], usize[@n]) -> Option<usize[start + n]>[start + n <= usize::MAX])]
