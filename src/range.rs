@@ -97,9 +97,9 @@ impl<T> RangeBounds<T> for Range<T> {
 #[flux_rs::assoc(fn step(self: Range<Idx>, other: Range<Idx>) -> bool { <Idx as Step>::can_step_forward(self.start, 1) => other.start == <Idx as Step>::step_forward(self.start, 1) } )]
 impl<Idx: Step> Iterator for Range<Idx> {
     #[flux_rs::sig(
-        fn(self: &strg Range<Idx>[@old_range]) -> Option<Idx>[old_range.start < old_range.end]
-            ensures self: Range<Idx>{r: <Idx as Step>::can_step_forward(old_range.start, 1) => r.start == <Idx as Step>::step_forward(old_range.start, 1) }
-  )]
+        fn(&mut Range<Idx>[@old_range]) -> Option<Idx>[old_range.start < old_range.end]
+            // ensures self: Range<Idx>{r: <Idx as Step>::can_step_forward(old_range.start, 1) => r.start == <Idx as Step>::step_forward(old_range.start, 1) })]
+    )]
     fn next(&mut self) -> Option<Idx>;
 }
 
