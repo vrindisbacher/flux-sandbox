@@ -92,19 +92,32 @@ impl<T> RangeBounds<T> for Range<T> {
 }
 
 #[flux_rs::extern_spec(core::ops)]
-#[generics(Idx as base)]
-#[flux_rs::assoc(fn done(r: Range<Idx>) -> bool { r.start == r.end } )]
-#[flux_rs::assoc(fn step(self: Range<Idx>, other: Range<Idx>) -> bool { <Idx as Step>::can_step_forward(self.start, 1) => other.start == <Idx as Step>::step_forward(self.start, 1) } )]
-impl<Idx: Step> Iterator for Range<Idx> {
+#[generics(A as base)]
+#[flux_rs::assoc(fn done(r: Range<A>) -> bool { r.start == r.end } )]
+#[flux_rs::assoc(fn step(self: Range<A>, other: Range<A>) -> bool { <A as Step>::can_step_forward(self.start, 1) => other.start == <A as Step>::step_forward(self.start, 1) } )]
+impl<A: Step> Iterator for Range<A> {
     #[flux_rs::sig(
-        fn(&mut Range<Idx>[@old_range]) -> Option<Idx>[old_range.start < old_range.end]
-            // ensures self: Range<Idx>{r: <Idx as Step>::can_step_forward(old_range.start, 1) => r.start == <Idx as Step>::step_forward(old_range.start, 1) })]
+        fn(self: &strg Range<A>[@old_range]) -> Option<A>[old_range.start < old_range.end]
+            ensures self: Range<A>{r: <A as Step>::can_step_forward(old_range.start, 1) => r.start == <A as Step>::step_forward(old_range.start, 1) }
     )]
-    fn next(&mut self) -> Option<Idx>;
+    fn next(&mut self) -> Option<A>;
+}
+
+#[flux_rs::extern_spec(core::ops)]
+#[generics(I as base)]
+impl <I: Iterator> IntoIterator for I {
+    #[flux_rs::sig(fn(self: I) -> I)]
+    fn into_iter(self) -> I;
 }
 
 #[flux_rs::refined_by(start: int, end: int)]
 struct StructWithRange {
     #[field(Range<usize>[start, end])]
     range: Range<usize>,
+}
+
+fn test_iter_range() {
+    let start: usize = 0;
+    let end: usize = 10;
+    for _ in start..end {}
 }
