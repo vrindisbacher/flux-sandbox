@@ -1,8 +1,10 @@
 #![feature(step_trait)]
+#![feature(slice_index_methods)]
 
 use std::ops::Range;
 
 mod bound;
+mod index;
 mod into_iter;
 mod iterator;
 mod option;
