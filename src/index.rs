@@ -1,11 +1,12 @@
+#![allow(unused)]
 use std::slice::SliceIndex;
 
-#[flux_rs::extern_spec(std::ops)]
-// #[flux_rs::assoc()]
-impl<T, I: SliceIndex<[T]>> Index<I> for [T] {
-    #[flux_rs::sig(fn(&Self[@len], I) -> &I::Output)]
-    fn index(&self, index: I) -> &I::Output;
-}
+// #[flux_rs::extern_spec(std::ops)]
+// #[flux_rs::assoc(fn slice_index_resulting_len(inp: Self:Output,  res: Self::Output, Self) -> bool)]
+// trait SliceIndex<T> {
+//     #[flux_rs::sig(fn(Self, &T) -> &Self::Output)]
+//     fn index(self, slice: &T) -> &Self::Output;
+// }
 
 #[flux_rs::extern_spec(std::ops)]
 #[generics(T as base)]
