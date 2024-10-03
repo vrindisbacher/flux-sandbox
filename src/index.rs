@@ -17,11 +17,10 @@ trait IndexMut<Idx> {
 #[flux_rs::extern_spec(std::slice)]
 #[flux::generics(Self as base, T as base)]
 #[flux::assoc(fn in_bounds(idx: Self, v: T) -> bool)]
-trait SliceIndex<T> {
-    #[flux_rs::sig(fn(Self, &T) -> &Self::Output)]
-    fn index(self, slice: &T) -> &Self::Output
-    where
-        Self: Sized;
+trait SliceIndex<T>
+where
+    T: ?Sized,
+{
 }
 
 #[flux_rs::extern_spec(std::ops)]
@@ -41,6 +40,15 @@ impl<T, I: SliceIndex<[T]>> IndexMut<I> for [T] {
 #[flux_rs::extern_spec(std::slice)]
 #[flux::assoc(fn in_bounds(idx: Range<int>, len: int) -> bool { idx.start >= 0 && idx.start <= idx.end && idx.end < len } )]
 impl<T> SliceIndex<[T]> for Range<usize> {
+    #[flux_rs::sig(fn(Range<usize>[@start, @end], &[T][@len]) -> Option<&[T][end - start]>[start >= 0 && start <= end && end < len])]
+    fn get(self, slice: &[T]) -> Option<&[T]>;
+
+    #[flux_rs::sig(fn(Range<usize>[@start, @end], &mut [T][@len]) -> Option<&mut [T][end - start]>[start >= 0 && start <= end && end < len])]
+    fn get_mut(self, slice: &mut [T]) -> Option<&mut [T]>;
+
     #[flux_rs::sig(fn(Range<usize>[@start, @end], &[T][@len]) -> &[T][end - start])]
     fn index(self, slice: &[T]) -> &[T];
+
+    #[flux_rs::sig(fn(Range<usize>[@start, @end], &mut [T][@len]) -> &mut [T][end - start])]
+    fn index_mut(self, slice: &mut [T]) -> &mut [T];
 }
