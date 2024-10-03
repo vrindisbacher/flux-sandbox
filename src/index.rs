@@ -12,6 +12,7 @@ trait Index<Idx> {
 #[flux_rs::extern_spec(std::ops)]
 #[generics(T as base)]
 impl<T, I: SliceIndex<[T]>> Index<I> for [T] { 
+    // problem here: How can I refine `I`???
     #[flux_rs::sig(fn(&[T], I) -> &I::Output)]
     fn index(&self, index: I) -> &I::Output;
 }
