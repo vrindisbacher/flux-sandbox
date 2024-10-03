@@ -19,6 +19,7 @@ pub struct MyStruct<'a, T> {
     range: Range<usize>,
 }
 
+#[flux_rs::generics(T as base)]
 impl<'a, T> MyStruct<'a, T> {
     #[flux_rs::sig(fn(&MyStruct<T>[@internal_len, @start, @end]) -> &[T][end - start])]
     fn slice_me_up(&'a self) -> &'a [T] {
