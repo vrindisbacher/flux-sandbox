@@ -33,10 +33,10 @@ impl<'a, T> MyStruct<'a, T> {
         &self.internal[self.range.start..self.range.end]
     }
 
-    // #[flux_rs::sig(fn(&MyStruct<T>[@internal_len, @start, @end]) -> Option<&[T]>[start >= 0 && start <= end && end < internal_len])]
-    // fn slice_me_up_safe(&'a self) -> Option<&'a [T]> {
-    //     self.internal.get(self.range.start..self.range.end)
-    // }
+    #[flux_rs::sig(fn(&MyStruct<T>[@internal_len, @start, @end]) -> Option<&[T]>[start >= 0 && start <= end && end < internal_len])]
+    fn slice_me_up_safe(&'a self) -> Option<&'a [T]> {
+        self.internal.get(self.range.start..self.range.end)
+    }
 
     #[flux_rs::sig(fn(&MyStruct<T>[@internal_len, @start, @end]) -> Option<&T>[start >= 0 && start < internal_len])]
     fn index_me_safe(&'a self) -> Option<&'a T> {
