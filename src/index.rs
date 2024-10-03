@@ -71,20 +71,15 @@ impl<T> SliceIndex<[T]> for usize {
     fn index_mut(self, slice: &mut [T]) -> &mut T;
 }
 
-#[flux_rs::extern_spec]
+#[flux_rs::extern_spec(std::slice)]
 impl<T> [T] {
-    #[flux_rs::sig(fn(&[T][@len], I) -> Option<&I::Output>
-                   // [<I as SliceIndex<Self>>::in_bounds(idx, len)]
-                   )]
-    #[generics(I as base)]
+    #[flux_rs::sig(fn<I as base>(&[T][@len], I[@idx]) -> Option<&I::Output>[<I as SliceIndex<[T]>>::in_bounds(idx, len)])]
     fn get<I>(&self, index: I) -> Option<&I::Output>
     where
         I: SliceIndex<Self>;
 
-    #[flux_rs::sig(fn(&mut [T][@len], I) -> Option<&mut I::Output>
-                   // [<I as SliceIndex<Self>>::in_bounds(idx, len)]
-                   )]
-    #[generics(I as base)]
+
+    #[flux_rs::sig(fn<I as base>(&mut [T][@len], I[@idx]) -> Option<&mut I::Output>[<I as SliceIndex<[T]>>::in_bounds(idx, len)])]
     fn get_mut<I>(&mut self, index: I) -> Option<&mut I::Output>
     where
         I: SliceIndex<Self>;
