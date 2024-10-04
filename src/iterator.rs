@@ -79,6 +79,6 @@ impl<I: Iterator> Iterator for Skip<I> {
 #[flux_rs::assoc(fn done(r: Zip<A, B>) -> bool { r.idx >= r.len && r.idx >= r.a_len })]
 #[flux_rs::assoc(fn step(self: Zip<A, B>, other: Zip<A, B>) -> bool { self.idx + 1 == other.idx } )]
 impl<A: Iterator, B: Iterator> Iterator for Zip<A, B> {
-    #[flux_rs::sig(fn(&mut Zip<A, B>[@a, @b, @idx, @len, @a_len]) -> Option<(A::Item, B::Item)>[idx >= len && idx >= a_len])]
-    fn next(&mut self) -> Option<(A::Item, B::Item)>;
+    #[flux_rs::sig(fn(&mut Zip<A, B>[@a, @b, @idx, @len, @a_len]) -> Option<_>[idx >= len && idx >= a_len])]
+    fn next(&mut self) -> Option<<Zip<A, B> as Iterator>::Item>;
 }

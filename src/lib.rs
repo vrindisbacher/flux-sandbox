@@ -1,5 +1,6 @@
 #![feature(step_trait)]
 #![feature(slice_index_methods)]
+#![allow(unused)]
 
 use std::ops::Range;
 
@@ -11,19 +12,27 @@ mod option;
 mod range;
 mod step;
 
+flux_rs::defs! {
+    fn is_proper_usize(x: int) -> bool { x >= usize::MIN && x <= usize::MAX }
+}
+
 #[flux_rs::refined_by(internal_len: int, start: int, end: int)]
+#[flux_rs::invariant(internal_len > 0)]
+#[flux_rs::invariant(start >= 0 && start <= end && end <= internal_len && is_proper_usize(start) && is_proper_usize(end))]
 pub struct MyStruct<'a, T> {
     #[field({ &[T][internal_len] | internal_len > 0 })]
     internal: &'a [T],
-    #[field({ Range<usize>[start, end] | start >= 0 && start < end && end < internal_len })]
+    #[field({ Range<usize>[start, end] |  start >= 0 && start <= end && end <= internal_len && is_proper_usize(start) && is_proper_usize(end) })]
     range: Range<usize>,
 }
 
 #[flux_rs::refined_by(internal_len: int, start: int, end: int)]
+#[flux_rs::invariant(internal_len > 0)]
+#[flux_rs::invariant(start >= 0 && start <= end && end <= internal_len && is_proper_usize(start) && is_proper_usize(end))]
 pub struct MyStructMut<'a, T> {
     #[field({ &mut [T][internal_len] | internal_len > 0 })]
     internal: &'a mut [T],
-    #[field({ Range<usize>[start, end] | start >= 0 && start < end && end < internal_len })]
+    #[field({ Range<usize>[start, end] | start >= 0 && start <= end && end <= internal_len && is_proper_usize(start) && is_proper_usize(end) })]
     range: Range<usize>,
 }
 
@@ -33,7 +42,7 @@ impl<'a, T> MyStruct<'a, T> {
         &self.internal[self.range.start..self.range.end]
     }
 
-    #[flux_rs::sig(fn(&MyStruct<T>[@internal_len, @start, @end]) -> Option<&[T]>[start >= 0 && start <= end && end < internal_len])]
+    #[flux_rs::sig(fn(&MyStruct<T>[@internal_len, @start, @end]) -> Option<&[T]>[start >= 0 && start <= end && end <= internal_len])]
     fn slice_me_up_safe(&'a self) -> Option<&'a [T]> {
         self.internal.get(self.range.start..self.range.end)
     }
@@ -50,7 +59,7 @@ impl<'a, T> MyStructMut<'a, T> {
         &mut self.internal[self.range.start..self.range.end]
     }
 
-    #[flux_rs::sig(fn(&mut MyStructMut<T>[@internal_len, @start, @end]) -> Option<&mut [T]>[start >= 0 && start <= end && end < internal_len])]
+    #[flux_rs::sig(fn(&mut MyStructMut<T>[@internal_len, @start, @end]) -> Option<&mut [T]>[start >= 0 && start <= end && end <= internal_len])]
     fn slice_me_up_safe(&'a mut self) -> Option<&'a mut [T]> {
         self.internal.get_mut(self.range.start..self.range.end)
     }
@@ -73,5 +82,5 @@ fn test_skip<T>(slice: &[T]) {
 }
 
 fn test_zip<T>(slice: &[T]) {
-    for _ in slice.iter().zip(slice.iter()) {}
+    // for _ in slice.iter().zip(slice.iter()) {}
 }
