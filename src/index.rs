@@ -78,7 +78,6 @@ impl<T> [T] {
     where
         I: SliceIndex<Self>;
 
-
     #[flux_rs::sig(fn<I as base>(&mut [T][@len], I[@idx]) -> Option<&mut I::Output>[<I as SliceIndex<[T]>>::in_bounds(idx, len)])]
     fn get_mut<I>(&mut self, index: I) -> Option<&mut I::Output>
     where

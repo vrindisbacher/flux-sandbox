@@ -55,3 +55,23 @@ impl<'a, T> MyStructMut<'a, T> {
         self.internal.get_mut(self.range.start..self.range.end)
     }
 }
+
+fn test_iter<T>(slice: &[T]) {
+    for _ in slice.iter() {}
+}
+
+fn test_iter_mut<T>(slice: &mut [T]) {
+    for _ in slice.iter_mut() {}
+}
+
+fn test_enum<T>(slice: &[T]) {
+    for _ in slice.iter().enumerate() {}
+}
+
+fn test_skip<T>(slice: &[T]) {
+    for _ in slice.iter().skip(1) {}
+}
+
+fn test_zip<T>(slice: &[T]) {
+    for _ in slice.iter().zip(slice.iter()) {}
+}
