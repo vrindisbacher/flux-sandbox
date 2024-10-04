@@ -29,10 +29,8 @@ trait Iterator {
     #[flux_rs::sig(fn(self: &strg Self[@curr_s]) -> Option<Self::Item>[!<Self as Iterator>::done(curr_s)] ensures self: Self{next_s: <Self as Iterator>::step(curr_s, next_s)})]
     fn next(&mut self) -> Option<Self::Item>;
 
-    #[flux_rs::sig(fn(Self[@s]) -> Enumerate<Self>[0, s])]
-    fn enumerate(self) -> Enumerate<Self>
-    where
-        Self: Sized;
+    #[flux_rs::sig(fn<U as base>(Self, U) -> Zip<Self, U>)]
+    fn zip<U: IntoIterator>(self, other: U) -> Zip<Self, <U as IntoIterator>::IntoIter> where Self: Sized;
 }
 
 #[flux_rs::extern_spec(core::ops)]

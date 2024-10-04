@@ -11,6 +11,7 @@ mod iterator;
 mod option;
 mod range;
 mod step;
+mod string;
 
 flux_rs::defs! {
     fn is_proper_usize(x: int) -> bool { x >= usize::MIN && x <= usize::MAX }
@@ -82,5 +83,56 @@ fn test_skip<T>(slice: &[T]) {
 }
 
 fn test_zip<T>(slice: &[T]) {
-    // for _ in slice.iter().zip(slice.iter()) {}
+    let iter = slice.iter().zip(slice);
+}
+
+#[flux_rs::refined_by(offset: int, index: int, bytes_remaining: bool)]
+pub struct WriteStruct {
+    #[field(usize[offset])]
+    offset: usize,
+    #[field(usize[index])]
+    index: usize,
+    #[field(bool[bytes_remaining])]
+    bytes_remaining: bool,
+}
+
+impl WriteStruct {
+    #[flux_rs::sig(
+        fn (
+            &mut WriteStruct[@offset, @idx, @br], 
+            { 
+                &str[@s] | str_len(s) > 0 
+                // && 
+                //(offset > idx => offset - idx <= str_len(s)) 
+            }
+        ) -> _
+    )]
+    fn write_str(&mut self, s: &str) {
+        let string_len = s.len();
+        let offset = self.offset;
+        let index = self.index;
+        if index + string_len < offset {
+            // We are still waiting for `self.offset` bytes to be send before we
+            // actually start printing.
+            // self.index += string_len;
+            return;
+        } else {
+            // We need to be printing at least some of this.
+            let start = if offset <= index {
+                // We're past our offset, so we can display this entire str.
+                0
+            } else {
+                // We want to start in the middle.
+                offset - index
+            };
+
+            let ret = &(s).as_bytes()[start..string_len];
+        }
+    }
+}
+
+#[flux_rs::sig(fn() -> usize[3])]
+pub fn str_len_good() -> usize {
+    let x = "hog";
+    x.len()
 }
