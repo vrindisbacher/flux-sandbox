@@ -28,9 +28,6 @@ struct Iter<'a, T>;
 trait Iterator {
     #[flux_rs::sig(fn(self: &strg Self[@curr_s]) -> Option<Self::Item>[!<Self as Iterator>::done(curr_s)] ensures self: Self{next_s: <Self as Iterator>::step(curr_s, next_s)})]
     fn next(&mut self) -> Option<Self::Item>;
-
-    #[flux_rs::sig(fn<U as base>(Self, U) -> Zip<Self, U>)]
-    fn zip<U: IntoIterator>(self, other: U) -> Zip<Self, <U as IntoIterator>::IntoIter> where Self: Sized;
 }
 
 #[flux_rs::extern_spec(core::ops)]
@@ -77,6 +74,6 @@ impl<I: Iterator> Iterator for Skip<I> {
 #[flux_rs::assoc(fn done(r: Zip<A, B>) -> bool { r.idx >= r.len && r.idx >= r.a_len })]
 #[flux_rs::assoc(fn step(self: Zip<A, B>, other: Zip<A, B>) -> bool { self.idx + 1 == other.idx } )]
 impl<A: Iterator, B: Iterator> Iterator for Zip<A, B> {
-    #[flux_rs::sig(fn(&mut Zip<A, B>[@a, @b, @idx, @len, @a_len]) -> Option<_>[idx >= len && idx >= a_len])]
+    #[flux_rs::sig(fn(&mut Zip<A, B>[@a, @b, @idx, @len, @a_len]) -> Option<_>[idx >= len || idx >= a_len])]
     fn next(&mut self) -> Option<<Zip<A, B> as Iterator>::Item>;
 }

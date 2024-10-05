@@ -2,7 +2,7 @@
 #![feature(slice_index_methods)]
 #![allow(unused)]
 
-use std::ops::Range;
+use std::{ops::{Bound, Index, IndexMut, Range, RangeBounds}, slice::SliceIndex};
 
 mod bound;
 mod index;
@@ -52,6 +52,31 @@ impl<'a, T> MyStruct<'a, T> {
     fn index_me_safe(&'a self) -> Option<&'a T> {
         self.internal.get(self.range.start)
     }
+
+    #[flux_rs::sig(fn<R as base>(&mut MyStruct<T>[@ss], 
+                                 { R[@r] | <R as RangeBounds<usize>>::start(r) + 1 <= <R as RangeBounds<usize>>::end(r)
+                                 })
+                )]
+    pub fn slice<R: RangeBounds<usize>>(&mut self, range: R) {
+        let start = match range.start_bound() {
+            Bound::Included(s) => *s,
+            Bound::Excluded(s) => *s + 1,
+            Bound::Unbounded => 0,
+        };
+
+        let end = match range.end_bound() {
+            Bound::Included(e) => *e + 1,
+            Bound::Excluded(e) => *e,
+            Bound::Unbounded => self.range.end - self.range.start,
+        };
+
+        // The start is at most start + (start + 1)
+        let new_start = self.range.start + start;
+        // 
+        let new_end = new_start + (end - start);
+
+        self.range = new_start..new_end;
+    }
 }
 
 impl<'a, T> MyStructMut<'a, T> {
@@ -63,6 +88,30 @@ impl<'a, T> MyStructMut<'a, T> {
     #[flux_rs::sig(fn(&mut MyStructMut<T>[@internal_len, @start, @end]) -> Option<&mut [T]>[start >= 0 && start <= end && end <= internal_len])]
     fn slice_me_up_safe(&'a mut self) -> Option<&'a mut [T]> {
         self.internal.get_mut(self.range.start..self.range.end)
+    }
+}
+
+#[flux_rs::generics(I as base)]
+impl<'a, T, I> Index<I> for MyStructMut<'a, T>
+where
+    I: SliceIndex<[T]>,
+{
+    type Output = <I as SliceIndex<[T]>>::Output;
+
+    #[flux_rs::sig(fn(&MyStructMut<T>[@internal_len, @start, @end], I[@idx]) -> &Self::Output requires <I as SliceIndex<[T]>>::in_bounds(idx, end - start))]
+    fn index(&self, idx: I) -> &Self::Output {
+        &self.internal[self.range.start..self.range.end][idx]
+    }
+}
+
+#[flux_rs::generics(I as base)]
+impl<'a, T, I> IndexMut<I> for MyStructMut<'a, T>
+where
+    I: SliceIndex<[T]>,
+{
+    #[flux_rs::sig(fn(&mut MyStructMut<T>[@internal_len, @start, @end], I[@idx]) -> &mut Self::Output requires <I as SliceIndex<[T]>>::in_bounds(idx, end - start))]
+    fn index_mut(&mut self, idx: I) -> &mut Self::Output {
+        &mut self.internal[self.range.start..self.range.end][idx]
     }
 }
 
@@ -136,3 +185,4 @@ pub fn str_len_good() -> usize {
     let x = "hog";
     x.len()
 }
+
